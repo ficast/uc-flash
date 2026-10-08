@@ -5,6 +5,7 @@ const cards = (n: number) => `${n} ${n === 1 ? 'cartão' : 'cartões'}`
 
 export const T = {
   title: 'Flashcards',
+  howItWorks: 'Vira o cartão e marca se acertaste. Os cartões certos saem do monte; os errados voltam a aparecer mais à frente, até acertares todos.',
   empty: 'Nenhum baralho disponível.',
   menu: 'Menu',
   lists: 'Listas',

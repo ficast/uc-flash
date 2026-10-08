@@ -132,6 +132,7 @@ function Practice({ deck }: { deck: FlashDeck }) {
     return (
       <div className="mx-auto max-w-xl space-y-6">
         {header}
+        <p className="-mt-3 text-sm text-muted-foreground">{T.howItWorks}</p>
         <Group label={T.lists} hint={T.listsHint}>
           {deck.lists.map((l) => (
             <Chip key={l.key} pressed={lists.includes(l.key)}

@@ -23,6 +23,7 @@ test('escolha: começa na primeira lista; Todas, Limpar, direção e a escolha l
   const { unmount } = page()
   expect(screen.getByRole('button', { name: 'Começar com 4 cartões' })).toBeEnabled()
   expect(screen.getByText('Podes escolher uma lista ou várias ao mesmo tempo.')).toBeInTheDocument()
+  expect(screen.getByText(/Os cartões certos saem do monte/)).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'Todas' }))
   expect(screen.getByRole('button', { name: 'Começar com 6 cartões' })).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: /Alemão → português/ }))
