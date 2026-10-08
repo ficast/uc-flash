@@ -50,11 +50,17 @@ function validPile(deck: FlashDeck, p: SavedPile): boolean {
   return Array.isArray(p.pile) && Array.isArray(p.last) && p.pile.length > 0 && p.pile.every(ok) && p.last.every(ok)
 }
 
+/** A direção de um monte pelos próprios cartões (o `dir` guardado pode não bater com eles em montes antigos). */
+function pileDir(p: SavedPile): DirChoice {
+  const dirs = new Set(p.last.map((k) => k.slice(k.lastIndexOf(':') + 1)))
+  return dirs.size > 1 ? 'both' : dirs.has('p') ? 'pt-de' : 'de-pt'
+}
+
 /** "Lektion 3 · PT → DE": as listas e a direção de um monte guardado. */
 function pileLabel(deck: FlashDeck, p: SavedPile): string {
   const titles = deck.lists.filter((l) => p.lists.includes(l.key)).map((l) => l.title)
   const lists = titles.length > 3 ? `${titles.length} listas` : titles.join(', ')
-  return `${lists} · ${T.dirTag[p.dir] ?? ''}`
+  return `${lists} · ${T.dirTag[pileDir(p)]}`
 }
 
 function Practice({ deck }: { deck: FlashDeck }) {
@@ -75,9 +81,14 @@ function Practice({ deck }: { deck: FlashDeck }) {
   }, [state, last, practiced, dir, save])
   const resumable = useMemo(() => (store.saved && validPile(deck, store.saved) ? store.saved : null), [deck, store.saved])
   // "Continuar" só é o botão principal quando a seleção atual é a do monte guardado; senão, é "Começar".
-  const resumeFirst = !!resumable && resumable.dir === dir
+  const resumeFirst = !!resumable && pileDir(resumable) === dir
     && resumable.lists.length === lists.length && resumable.lists.every((k) => lists.includes(k))
   const resume = (p: SavedPile) => {
+    // A seleção volta a ser a do monte: assim ele é guardado com as listas e a direção certas.
+    const d = pileDir(p)
+    setListsRaw(p.lists)
+    setDirRaw(d)
+    saveCfg(deck.key, p.lists, d)
     setLast(p.last)
     setState({ pile: p.pile, total: p.total, errs: p.errs, wrong: p.wrong, removed: p.removed })
     setFlipped(false)

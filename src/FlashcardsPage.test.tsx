@@ -88,6 +88,20 @@ test('continua o monte guardado no aparelho e grava a cada resposta; monte termi
   expect(stored()).toBeNull()
 })
 
+test('"Continuar" usa a direção dos cartões do monte e repõe a seleção', async () => {
+  // monte só PT → DE, gravado com o dir errado (como acontecia antes)
+  localStorage.setItem(pileKey(DECK.key), JSON.stringify({
+    pile: ['lektion-1:0:p'], total: 2, errs: {}, wrong: 0, removed: 1,
+    last: ['lektion-1:0:p', 'lektion-1:1:p'], lists: ['lektion-1'], dir: 'de-pt',
+  }))
+  page()
+  await userEvent.click(screen.getByRole('button', { name: 'Continuar onde parei: Lektion 1 · PT → DE (1 cartão no monte)' }))
+  expect(screen.getByTestId('fc-card')).toHaveTextContent('PT → DE')
+  expect((JSON.parse(localStorage.getItem(pileKey(DECK.key))!) as { dir: string }).dir).toBe('pt-de')
+  await userEvent.click(screen.getByRole('button', { name: /Menu/ }))
+  expect(screen.getByRole('button', { name: /Português → alemão/ })).toHaveAttribute('aria-pressed', 'true')
+})
+
 test('sem monte guardado (ou com um que já não serve), não aparece "Continuar"', () => {
   localStorage.setItem(pileKey(DECK.key), JSON.stringify({ pile: ['lektion-9:0:d'], last: [] }))
   page()
