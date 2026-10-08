@@ -42,6 +42,7 @@ test('praticar: virar, errar (volta para o monte), acertar, resumo e só as erra
   const stats = screen.getByTestId('fc-stats')
   expect(stats).toHaveTextContent('No monte 2')
   expect(screen.getByRole('button', { name: /Certo/ })).toBeDisabled()
+  expect(screen.getByText(/Errado: volta a aparecer mais à frente/)).toBeInTheDocument()
   // artigo na cor do género
   expect(within(screen.getByTestId('fc-card')).getByText(/^(der Kurs|die Frage)/).dataset.gender).toMatch(/^[mf]$/)
   await userEvent.click(screen.getByRole('button', { name: 'Virar' }))

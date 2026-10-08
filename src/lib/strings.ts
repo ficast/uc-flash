@@ -37,6 +37,7 @@ export const T = {
   ok: 'Certo',
   bad: 'Errado',
   plural: 'Plural',
+  practiceHint: 'Certo: o cartão sai do monte. Errado: volta a aparecer mais à frente.',
   keys: 'Atalhos: V vira, seta para a direita acerta, seta para a esquerda erra',
   done: 'Monte terminado',
   summary: (s: { total: number; first: number; missed: number; wrong: number }) =>

@@ -237,7 +237,10 @@ function Practice({ deck }: { deck: FlashDeck }) {
         <Button className="h-14" onClick={() => respond(true)} disabled={!flipped}><Check /> {T.ok}</Button>
         <Button variant="outline" className="h-14" onClick={() => respond(false)} disabled={!flipped}><X /> {T.bad}</Button>
       </div>
-      <p className="hidden text-center text-xs text-muted-foreground sm:block">{T.keys}</p>
+      <div className="space-y-1 text-center text-xs text-muted-foreground">
+        <p>{T.practiceHint}</p>
+        <p className="hidden sm:block">{T.keys}</p>
+      </div>
     </div>
   )
 }
