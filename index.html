@@ -12,10 +12,14 @@
     <meta name="description" content="Vocabulário de alemão (DaF A1) em flashcards, com o progresso guardado no aparelho." />
     <title>Flashcards de Alemão A1</title>
     <script>
-      // Tema do sistema, aplicado antes da pintura para não piscar.
+      // Tema escolhido (localStorage "theme") ou, sem escolha, o do sistema; aplicado antes da pintura para não piscar.
       (function () {
         var m = window.matchMedia('(prefers-color-scheme: dark)')
-        var apply = function () { document.documentElement.classList.toggle('dark', m.matches) }
+        var saved = function () { try { return localStorage.getItem('theme') } catch (e) { return null } }
+        var apply = function () {
+          var t = saved()
+          document.documentElement.classList.toggle('dark', t ? t === 'dark' : m.matches)
+        }
         apply()
         m.addEventListener('change', apply)
       })()

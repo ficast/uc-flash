@@ -69,3 +69,8 @@ export const FOOTER = {
   source: 'Código no GitHub',
   repo: 'https://github.com/ficast/uc-flash',
 }
+
+export const THEME = {
+  toLight: 'Mudar para o modo claro',
+  toDark: 'Mudar para o modo escuro',
+}
