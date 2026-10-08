@@ -22,6 +22,7 @@ test('o baralho incluído: Lektion 1 a 10, 1.481 vocábulos', () => {
 test('escolha: começa na primeira lista; Todas, Limpar, direção e a escolha lembrada', async () => {
   const { unmount } = page()
   expect(screen.getByRole('button', { name: 'Começar com 4 cartões' })).toBeEnabled()
+  expect(screen.getByText('Podes escolher uma lista ou várias ao mesmo tempo.')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'Todas' }))
   expect(screen.getByRole('button', { name: 'Começar com 6 cartões' })).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: /Alemão → português/ }))

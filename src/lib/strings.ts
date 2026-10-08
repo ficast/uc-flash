@@ -8,6 +8,7 @@ export const T = {
   empty: 'Nenhum baralho disponível.',
   menu: 'Menu',
   lists: 'Listas',
+  listsHint: 'Podes escolher uma lista ou várias ao mesmo tempo.',
   cards,
   direction: 'Direção',
   dir: {

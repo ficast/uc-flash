@@ -111,7 +111,7 @@ function Practice({ deck }: { deck: FlashDeck }) {
     return (
       <div className="mx-auto max-w-xl space-y-6">
         {header}
-        <Group label={T.lists}>
+        <Group label={T.lists} hint={T.listsHint}>
           {deck.lists.map((l) => (
             <Chip key={l.key} pressed={lists.includes(l.key)}
               onClick={() => setLists(lists.includes(l.key) ? lists.filter((x) => x !== l.key)
@@ -260,10 +260,13 @@ function Legend() {
   )
 }
 
-function Group({ label, children }: { label: string; children: React.ReactNode }) {
+function Group({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">{label}</p>
+      <div>
+        <p className="text-sm font-medium">{label}</p>
+        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      </div>
       <div className="flex flex-wrap gap-2" role="group" aria-label={label}>{children}</div>
     </div>
   )
