@@ -1,11 +1,14 @@
 # Flashcards de Alemão A1
 
-O módulo de flashcards do Orbit Languages (`../assimil`) como app autónomo: sem login, sem servidor,
-com o progresso guardado no próprio aparelho (`localStorage`). É uma PWA: dá para instalar no telemóvel e usar offline.
+Um app simples para praticar vocabulário de alemão com flashcards. Não tem login nem servidor: o progresso fica
+guardado no próprio aparelho (`localStorage`). É uma PWA, por isso dá para instalar no telemóvel e usar offline.
 
-- Baralho: `src/data/de-daf-a1.json` (Lektion 1–10, 1.481 vocábulos), copiado de `assimil/api/src/assimil/flashcards/`, com as traduções adaptadas para pt-PT.
-- Lógica do monte: `src/lib/flashcardDeck.ts` (igual à do assimil).
-- Textos da interface (pt-PT): `src/lib/strings.ts`.
+O vocabulário segue as listas das Lektionen 1 a 10 do livro **Kurs DaF A1** (editora Klett), com 1.481 vocábulos
+e as traduções em português europeu.
+
+- Baralho: `src/data/de-daf-a1.json`.
+- Lógica do monte (embaralhar, certo/errado, resumo): `src/lib/flashcardDeck.ts`.
+- Textos da interface: `src/lib/strings.ts`.
 
 ## Comandos
 
