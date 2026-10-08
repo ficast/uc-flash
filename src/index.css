@@ -67,4 +67,8 @@
     body {
         @apply bg-background text-foreground font-sans antialiased;
     }
+    /* O Tailwind v4 deixa o cursor padrão nos botões: a mãozinha em tudo o que é clicável. */
+    button:not(:disabled), [role="button"]:not([aria-disabled="true"]), summary, a[href], label[for] {
+        cursor: pointer;
+    }
 }
