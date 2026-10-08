@@ -66,7 +66,12 @@ test('continua o monte guardado no aparelho e grava a cada resposta; monte termi
     last: ['lektion-1:0:d', 'lektion-1:1:d', 'lektion-2:0:d'], lists: ['lektion-1', 'lektion-2'], dir: 'de-pt',
   }))
   page()
-  await userEvent.click(screen.getByRole('button', { name: 'Continuar onde parei (2 cartões no monte)' }))
+  // a seleção atual (Lektion 1, os dois) não é a do monte guardado: "Começar" é o principal
+  expect(screen.getByRole('button', { name: /Continuar onde parei/ })).toHaveAttribute('data-variant', 'outline')
+  await userEvent.click(screen.getByRole('button', { name: /Alemão → português/ }))
+  await userEvent.click(screen.getByRole('button', { name: 'Todas' }))
+  expect(screen.getByRole('button', { name: /Continuar onde parei/ })).toHaveAttribute('data-variant', 'default')
+  await userEvent.click(screen.getByRole('button', { name: 'Continuar onde parei: Lektion 1, Lektion 2 · DE → PT (2 cartões no monte)' }))
   const stats = screen.getByTestId('fc-stats')
   expect(stats).toHaveTextContent('No monte 2')
   expect(stats).toHaveTextContent('Erros 1')
@@ -76,7 +81,7 @@ test('continua o monte guardado no aparelho e grava a cada resposta; monte termi
   expect(stored()?.pile).toEqual(['lektion-2:0:d'])
   // voltar ao menu mantém o monte para continuar
   await userEvent.click(screen.getByRole('button', { name: /Menu/ }))
-  await userEvent.click(screen.getByRole('button', { name: 'Continuar onde parei (1 cartão no monte)' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Continuar onde parei: Lektion 1, Lektion 2 · DE → PT (1 cartão no monte)' }))
   await userEvent.keyboard('v')
   await userEvent.keyboard('{ArrowRight}')
   expect(screen.getByRole('heading', { name: 'Monte terminado' })).toBeInTheDocument()

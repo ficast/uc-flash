@@ -50,6 +50,13 @@ function validPile(deck: FlashDeck, p: SavedPile): boolean {
   return Array.isArray(p.pile) && Array.isArray(p.last) && p.pile.length > 0 && p.pile.every(ok) && p.last.every(ok)
 }
 
+/** "Lektion 3 · PT → DE": as listas e a direção de um monte guardado. */
+function pileLabel(deck: FlashDeck, p: SavedPile): string {
+  const titles = deck.lists.filter((l) => p.lists.includes(l.key)).map((l) => l.title)
+  const lists = titles.length > 3 ? `${titles.length} listas` : titles.join(', ')
+  return `${lists} · ${T.dirTag[p.dir] ?? ''}`
+}
+
 function Practice({ deck }: { deck: FlashDeck }) {
   const [lists, setListsRaw] = useState<string[]>(() => loadCfg(deck).lists)
   const [dir, setDirRaw] = useState<DirChoice>(() => loadCfg(deck).dir)
@@ -67,6 +74,9 @@ function Practice({ deck }: { deck: FlashDeck }) {
     if (state) save({ ...state, last, lists: practiced, dir })
   }, [state, last, practiced, dir, save])
   const resumable = useMemo(() => (store.saved && validPile(deck, store.saved) ? store.saved : null), [deck, store.saved])
+  // "Continuar" só é o botão principal quando a seleção atual é a do monte guardado; senão, é "Começar".
+  const resumeFirst = !!resumable && resumable.dir === dir
+    && resumable.lists.length === lists.length && resumable.lists.every((k) => lists.includes(k))
   const resume = (p: SavedPile) => {
     setLast(p.last)
     setState({ pile: p.pile, total: p.total, errs: p.errs, wrong: p.wrong, removed: p.removed })
@@ -132,11 +142,12 @@ function Practice({ deck }: { deck: FlashDeck }) {
         </Group>
         <Legend />
         {resumable && (
-          <Button className="h-12 w-full" onClick={() => resume(resumable)}>
-            <Play /> {T.resume(resumable.pile.length)}
+          <Button className="h-auto min-h-12 w-full whitespace-normal py-2" variant={resumeFirst ? 'default' : 'outline'}
+            onClick={() => resume(resumable)}>
+            <Play /> {T.resume(resumable.pile.length, pileLabel(deck, resumable))}
           </Button>
         )}
-        <Button className="h-12 w-full" variant={resumable ? 'outline' : 'default'} disabled={ids.length === 0} onClick={() => begin(ids)}>
+        <Button className="h-12 w-full" variant={resumeFirst ? 'outline' : 'default'} disabled={ids.length === 0} onClick={() => begin(ids)}>
           {ids.length ? T.start(ids.length) : T.pickList}
         </Button>
         <p className="text-center text-xs text-muted-foreground">{T.localNote}</p>

@@ -22,10 +22,12 @@ export const T = {
     'pt-de': 'vês a tradução, lembras a palavra e o artigo',
   },
   dirShort: { d: 'DE → PT', p: 'PT → DE' },
+  dirTag: { both: 'DE ⇄ PT', 'de-pt': 'DE → PT', 'pt-de': 'PT → DE' },
   colors: 'Cores',
   gender: { m: 'masculino', f: 'feminino', n: 'neutro', x: 'outras, sem género' },
   start: (n: number) => `Começar com ${cards(n)}`,
-  resume: (n: number) => `Continuar onde parei (${cards(n)} no monte)`,
+  /** O monte guardado: listas e direção, para não confundir com a seleção atual. */
+  resume: (n: number, what: string) => `Continuar onde parei: ${what} (${cards(n)} no monte)`,
   pickList: 'Escolhe pelo menos uma lista',
   left: 'No monte',
   right: 'Certas',
