@@ -45,3 +45,19 @@ export const T = {
   none: 'Limpar',
   localNote: 'O progresso fica guardado só neste aparelho e neste navegador.',
 }
+
+/** Como instalar a app no telemóvel (rodapé). */
+export const INSTALL = {
+  title: 'Instalar no telemóvel',
+  intro: 'Instalada, a app abre em ecrã inteiro a partir do ícone e funciona sem internet.',
+  ios: {
+    name: 'iPhone (Safari)',
+    steps: ['Abre esta página no Safari.', 'Toca em Partilhar (o quadrado com a seta para cima).',
+      'Escolhe "Adicionar ao ecrã principal" e toca em Adicionar.'],
+  },
+  android: {
+    name: 'Android (Chrome)',
+    steps: ['Abre esta página no Chrome.', 'Toca no menu ⋮ (canto superior direito).',
+      'Escolhe "Instalar app" (ou "Adicionar ao ecrã principal") e confirma.'],
+  },
+}
