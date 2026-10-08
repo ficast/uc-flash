@@ -61,3 +61,10 @@ export const INSTALL = {
       'Escolhe "Instalar app" (ou "Adicionar ao ecrã principal") e confirma.'],
   },
 }
+
+export const FOOTER = {
+  copyright: '© 2026 Filipe Oliveira',
+  license: 'Livre para uso e estudo (licença MIT)',
+  source: 'Código no GitHub',
+  repo: 'https://github.com/ficast/uc-flash',
+}

@@ -21,3 +21,8 @@ Os ícones em `public/` saem de `public/icon.svg` com `npx pwa-assets-generator`
 ## Deploy no Vercel
 
 Importar o repositório no Vercel: o preset Vite é detetado sozinho (build `npm run build`, saída `dist`).
+
+## Licença
+
+© 2026 Filipe Oliveira. Livre para uso e estudo, sob a [licença MIT](LICENSE): podes usar, copiar, modificar
+e distribuir, desde que mantenhas o aviso de copyright.

@@ -9,7 +9,7 @@ const installed = () =>
 export function InstallHelp() {
   if (installed()) return null
   return (
-    <footer className="mx-auto mt-10 max-w-xl border-t pt-4 text-sm text-muted-foreground">
+    <aside className="mx-auto mt-10 max-w-xl border-t pt-4 text-sm text-muted-foreground">
       <details>
         <summary className="flex cursor-pointer list-none items-center gap-2 font-medium text-foreground">
           <Smartphone className="size-4" /> {INSTALL.title}
@@ -26,6 +26,6 @@ export function InstallHelp() {
           ))}
         </div>
       </details>
-    </footer>
+    </aside>
   )
 }
