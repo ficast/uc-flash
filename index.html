@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <meta name="theme-color" content="#171717" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Vocabulário de alemão (DaF A1) em flashcards, com o progresso guardado no aparelho." />
+    <title>Flashcards de Alemão A1</title>
+    <script>
+      // Tema do sistema, aplicado antes da pintura para não piscar.
+      (function () {
+        var m = window.matchMedia('(prefers-color-scheme: dark)')
+        var apply = function () { document.documentElement.classList.toggle('dark', m.matches) }
+        apply()
+        m.addEventListener('change', apply)
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
