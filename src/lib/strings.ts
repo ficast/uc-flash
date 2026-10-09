@@ -68,10 +68,13 @@ export const INSTALL = {
 }
 
 export const FOOTER = {
-  copyright: '© 2026 Filipe Oliveira',
+  copyright: '© 2026 Filipe de Castro',
   license: 'Livre para uso e estudo (licença MIT)',
   source: 'Código no GitHub',
   repo: 'https://github.com/ficast/uc-flash',
+  coffeeIntro: 'Se esta app te foi útil,',
+  coffee: 'paga-me um café ☕',
+  kofi: 'https://ko-fi.com/ficast',
 }
 
 export const THEME = {
