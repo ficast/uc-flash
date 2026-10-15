@@ -14,8 +14,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: 'Flashcards de Alemão A1 e A2',
-        short_name: 'Flashcards',
+        name: 'UC Flashcards',
+        short_name: 'UC Flashcards',
         description: 'Vocabulário de alemão (DaF A1 e A2) em flashcards, com o progresso guardado no aparelho.',
         lang: 'pt-PT',
         start_url: '/',
