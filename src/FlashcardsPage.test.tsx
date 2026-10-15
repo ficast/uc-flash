@@ -6,7 +6,7 @@ import { DECKS } from '@/lib/decks'
 import type { FlashDeck } from '@/lib/types'
 
 const card = (de: string, pt: string, sec = '1A') => ({ de, ipa: 'ipa', pt, plural: '', nota: '', sec })
-const DECK: FlashDeck = { key: 'de-daf-a1', title: 'Deutsch A1 (DaF)', language: 'de', support_language: 'pt', lists: [
+const DECK: FlashDeck = { key: 'de-daf-a1', title: 'Kurs DaF A1', language: 'de', support_language: 'pt', lists: [
   { key: 'lektion-1', title: 'Lektion 1', cards: [card('der Kurs, -e', 'o curso'), card('die Frage, -n', 'a pergunta')] },
   { key: 'lektion-2', title: 'Lektion 2', cards: [card('das Buch, ⸚er', 'o livro', '2A')] },
 ] }
@@ -117,18 +117,18 @@ test('sem monte guardado (ou com um que já não serve), não aparece "Continuar
 })
 
 test('com dois livros: escolher o livro, cada um com as suas listas, e o livro lembrado', async () => {
-  const A2: FlashDeck = { ...DECK, key: 'de-daf-a2', title: 'Deutsch A2 (DaF)', lists: [
+  const A2: FlashDeck = { ...DECK, key: 'de-daf-a2', title: 'Kurs DaF A2', lists: [
     { key: 'lektion-11', title: 'Lektion 11', cards: [card('der Grund, ⸚e', 'a razão', '11A')] },
   ] }
   const { unmount } = render(<FlashcardsPage decks={[DECK, A2]} />)
   expect(screen.queryByRole('button', { name: /^Lektion 11/ })).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: /Deutsch A1 \(DaF\)\s*Lektion 1 a 2/ })).toHaveAttribute('aria-pressed', 'true')
-  await userEvent.click(screen.getByRole('button', { name: /Deutsch A2/ }))
+  expect(screen.getByRole('button', { name: /Kurs DaF A1\s*Lektion 1 a 2/ })).toHaveAttribute('aria-pressed', 'true')
+  await userEvent.click(screen.getByRole('button', { name: /Kurs DaF A2/ }))
   expect(screen.getByRole('button', { name: /^Lektion 11/ })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Começar com 2 cartões' })).toBeInTheDocument()
   unmount()
   render(<FlashcardsPage decks={[DECK, A2]} />) // de volta: o A2
-  expect(screen.getByRole('button', { name: /Deutsch A2/ })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: /Kurs DaF A2/ })).toHaveAttribute('aria-pressed', 'true')
 })
 
 test('com um só livro, não aparece a escolha de livro', () => {
