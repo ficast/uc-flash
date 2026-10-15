@@ -8,6 +8,10 @@ export const T = {
   howItWorks: 'Vira o cartão e marca se acertaste. Os cartões certos saem do monte; os errados voltam a aparecer mais à frente, até acertares todos.',
   empty: 'Nenhum baralho disponível.',
   menu: 'Menu',
+  book: 'Livro',
+  /** "Lektion 1 a 10": as listas de um livro. */
+  bookLists: (titles: string[]) =>
+    titles.length > 1 ? `${titles[0]} a ${titles[titles.length - 1].replace(/^\D+/, '')}` : (titles[0] ?? ''),
   lists: 'Listas',
   listsHint: 'Podes escolher uma lista ou várias ao mesmo tempo.',
   cards,
@@ -37,8 +41,11 @@ export const T = {
   ok: 'Certo',
   bad: 'Errado',
   plural: 'Plural',
+  previous: 'Cartão anterior',
+  skip: 'Saltar',
+  swipeHint: 'Desliza o cartão para a direita para voltar ao anterior, ou para a esquerda para saltar (fica no monte).',
   practiceHint: 'Certo: o cartão sai do monte. Errado: volta a aparecer mais à frente.',
-  keys: 'Atalhos: V vira, seta para a direita acerta, seta para a esquerda erra',
+  keys: 'Atalhos: V vira, seta para a direita acerta, seta para a esquerda erra, Backspace volta ao anterior, S salta',
   done: 'Monte terminado',
   summary: (s: { total: number; first: number; missed: number; wrong: number }) =>
     `${cards(s.total)}: ${s.first} à primeira, ${s.missed} com pelo menos um erro, ${s.wrong} ${s.wrong === 1 ? 'erro' : 'erros'} no total.`,

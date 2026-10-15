@@ -6,6 +6,9 @@ export interface FlashCard {
   nota: string
   /** Secção da lição no livro (1A, 2C…). */
   sec: string
+  /** Frase de exemplo em alemão e a tradução; só no verso. */
+  ex?: string
+  ex_pt?: string
 }
 
 export interface FlashDeck {

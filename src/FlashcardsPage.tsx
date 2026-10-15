@@ -1,11 +1,11 @@
-import { Check, Play, RotateCcw, Undo2, X } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Check, ChevronLeft, ChevronRight, Play, RotateCcw, Undo2, X } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useIsDark } from '@/hooks/useIsDark'
 import { type SavedPile, usePileStore } from '@/hooks/usePileStore'
 import { DECKS } from '@/lib/decks'
 import {
-  answer, cardOf, type CardKey, type DirChoice, dirsFor, genderParts, type PileState, selection, startPile, summary,
+  answer, cardOf, type CardKey, type DirChoice, dirsFor, genderParts, type PileState, selection, skip, startPile, summary,
 } from '@/lib/flashcardDeck'
 import { T } from '@/lib/strings'
 import type { FlashDeck } from '@/lib/types'
@@ -17,11 +17,36 @@ const GENDER = {
   dark: { m: '#7aa7ff', f: '#ff8a8a', n: '#6ee09a', ipa: '#b79af0' },
 }
 
-/** Flashcards: escolher listas e direção, praticar o monte (os erros voltam) e ver o resumo. */
+/** Quantas respostas dá para desfazer, e quantos píxeis tem de deslizar o dedo para voltar. */
+const HISTORY_MAX = 50
+const SWIPE_MIN = 60
+
+/** Flashcards: escolher livro, listas e direção, praticar o monte (os erros voltam) e ver o resumo. */
 export function FlashcardsPage({ decks = DECKS }: { decks?: FlashDeck[] }) {
-  const deck = decks[0]
+  const [deckKey, setDeckKeyRaw] = useState<string | null>(() => loadDeck())
+  const deck = decks.find((d) => d.key === deckKey) ?? decks[0]
   if (!deck) return <p className="text-sm text-muted-foreground">{T.empty}</p>
-  return <Practice deck={deck} />
+  const setDeckKey = (k: string) => { setDeckKeyRaw(k); saveDeck(k) }
+  // Com mais de um livro, a escolha aparece no ecrã inicial; cada livro guarda as suas listas e o seu monte.
+  const picker = decks.length > 1 && (
+    <Group label={T.book}>
+      {decks.map((d) => (
+        <Chip key={d.key} pressed={d.key === deck.key} onClick={() => setDeckKey(d.key)} sub={T.bookLists(d.lists.map((l) => l.title))}>
+          {d.title}
+        </Chip>
+      ))}
+    </Group>
+  )
+  return <Practice key={deck.key} deck={deck} picker={picker} />
+}
+
+/** O livro escolhido por último neste aparelho. */
+const DECK_KEY = 'flashcards-deck'
+function loadDeck(): string | null {
+  try { return localStorage.getItem(DECK_KEY) } catch { return null }
+}
+function saveDeck(deck: string) {
+  try { localStorage.setItem(DECK_KEY, deck) } catch { /* sem armazenamento */ }
 }
 
 /** Listas e direção escolhidas por último neste aparelho (sem elas, a primeira lista). */
@@ -63,7 +88,7 @@ function pileLabel(deck: FlashDeck, p: SavedPile): string {
   return `${lists} · ${T.dirTag[pileDir(p)]}`
 }
 
-function Practice({ deck }: { deck: FlashDeck }) {
+function Practice({ deck, picker }: { deck: FlashDeck; picker?: React.ReactNode }) {
   const [lists, setListsRaw] = useState<string[]>(() => loadCfg(deck).lists)
   const [dir, setDirRaw] = useState<DirChoice>(() => loadCfg(deck).dir)
   const setLists = (v: string[]) => { setListsRaw(v); saveCfg(deck.key, v, dir) }
@@ -90,20 +115,52 @@ function Practice({ deck }: { deck: FlashDeck }) {
     setDirRaw(d)
     saveCfg(deck.key, p.lists, d)
     setLast(p.last)
+    setHistory([])
     setState({ pile: p.pile, total: p.total, errs: p.errs, wrong: p.wrong, removed: p.removed })
     setFlipped(false)
   }
 
+  // Os estados antes de cada resposta: "Cartão anterior" desfaz a última e volta a mostrar esse cartão.
+  const [history, setHistory] = useState<PileState[]>([])
   const begin = (keys: CardKey[]) => {
     setLast(keys)
     setState(startPile(keys))
+    setHistory([])
     setFlipped(false)
   }
-  const respond = useCallback((ok: boolean) => {
-    if (!flipped) return
-    setState((s) => (s ? answer(s, ok) : s))
+  const advance = useCallback((next: PileState) => {
+    if (!state) return
+    setHistory((h) => [...h.slice(-(HISTORY_MAX - 1)), state])
+    setState(next)
     setFlipped(false)
-  }, [flipped])
+  }, [state])
+  const respond = useCallback((ok: boolean) => {
+    if (flipped && state) advance(answer(state, ok))
+  }, [flipped, state, advance])
+  // Saltar: o cartão vai para o fim do monte, sem contar; dá para saltar sem virar.
+  const canSkip = !!state && state.pile.length > 1
+  const skipCard = useCallback(() => {
+    if (state && state.pile.length > 1) advance(skip(state))
+  }, [state, advance])
+  const back = useCallback(() => {
+    const prev = history[history.length - 1]
+    if (!prev) return
+    setHistory((h) => h.slice(0, -1))
+    setState(prev)
+    setFlipped(false)
+  }, [history])
+  // No telemóvel: deslizar o cartão para a direita volta ao anterior; para a esquerda, salta.
+  const swipe = useRef<{ x: number; y: number } | null>(null)
+  const onTouchStart = (e: React.TouchEvent) => { swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const s = swipe.current
+    swipe.current = null
+    if (!s) return
+    const dx = e.changedTouches[0].clientX - s.x, dy = e.changedTouches[0].clientY - s.y
+    if (Math.abs(dx) <= SWIPE_MIN || Math.abs(dy) >= Math.abs(dx) / 2) return
+    if (dx > 0) back()
+    else skipCard()
+  }
 
   useEffect(() => {
     if (!state || state.pile.length === 0) return
@@ -112,10 +169,12 @@ function Practice({ deck }: { deck: FlashDeck }) {
       if (e.key === 'v' || e.key === 'V') { e.preventDefault(); setFlipped(true) }
       else if (e.key === 'ArrowRight') { e.preventDefault(); respond(true) }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); respond(false) }
+      else if (e.key === 'Backspace') { e.preventDefault(); back() }
+      else if (e.key === 's' || e.key === 'S') { e.preventDefault(); skipCard() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [state, respond])
+  }, [state, respond, back, skipCard])
 
   const header = (
     <header className="flex items-center justify-between gap-3">
@@ -133,6 +192,7 @@ function Practice({ deck }: { deck: FlashDeck }) {
       <div className="mx-auto max-w-xl space-y-6">
         {header}
         <p className="-mt-3 text-sm text-muted-foreground">{T.howItWorks}</p>
+        {picker}
         <Group label={T.lists} hint={T.listsHint}>
           {deck.lists.map((l) => (
             <Chip key={l.key} pressed={lists.includes(l.key)}
@@ -194,6 +254,9 @@ function Practice({ deck }: { deck: FlashDeck }) {
             </ul>
           )}
           <Button className="h-12 w-full" onClick={() => begin(last)}><RotateCcw /> {T.again}</Button>
+          {history.length > 0 && (
+            <Button variant="ghost" size="sm" className="mx-auto flex" onClick={back}><ChevronLeft /> {T.previous}</Button>
+          )}
           {s.missed.length > 0 && (
             <Button variant="outline" className="h-12 w-full" onClick={() => begin(s.missed.map((m) => m.key))}>
               {T.onlyMissed}
@@ -220,7 +283,7 @@ function Practice({ deck }: { deck: FlashDeck }) {
         <div className="h-full rounded-full bg-foreground transition-[width]" style={{ width: `${progress}%` }} />
       </div>
       <article className="relative flex min-h-72 flex-col items-center justify-center gap-2 rounded-2xl border bg-card px-5 py-8 text-center"
-        data-testid="fc-card" aria-live="polite">
+        data-testid="fc-card" aria-live="polite" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <span className="absolute top-3 left-4 text-xs text-muted-foreground">{card.sec}</span>
         <span className="absolute top-3 right-4 text-xs text-muted-foreground">{T.dirShort[d]}</span>
         {d === 'd' ? <GermanSide card={card} /> : <p className="text-3xl font-medium">{card.pt}</p>}
@@ -229,6 +292,13 @@ function Practice({ deck }: { deck: FlashDeck }) {
             {d === 'd' ? <p className="text-3xl font-medium">{card.pt}</p> : <GermanSide card={card} />}
             {card.plural && <p className="text-sm text-muted-foreground">{T.plural}: {card.plural}</p>}
             {card.nota && <p className="max-w-[40ch] text-sm text-muted-foreground italic">{card.nota}</p>}
+            {card.ex && (
+              // A frase de exemplo, só no verso (nas duas direções): o vocábulo em uso, com a tradução.
+              <div className="mt-2 max-w-[42ch] space-y-0.5" data-testid="fc-example">
+                <p className="text-base" lang="de">{card.ex}</p>
+                {card.ex_pt && <p className="text-sm text-muted-foreground">{card.ex_pt}</p>}
+              </div>
+            )}
           </div>
         )}
       </article>
@@ -237,8 +307,13 @@ function Practice({ deck }: { deck: FlashDeck }) {
         <Button className="h-14" onClick={() => respond(true)} disabled={!flipped}><Check /> {T.ok}</Button>
         <Button variant="outline" className="h-14" onClick={() => respond(false)} disabled={!flipped}><X /> {T.bad}</Button>
       </div>
+      <div className="flex justify-between">
+        <Button variant="ghost" size="sm" onClick={back} disabled={history.length === 0}><ChevronLeft /> {T.previous}</Button>
+        <Button variant="ghost" size="sm" onClick={skipCard} disabled={!canSkip}>{T.skip} <ChevronRight /></Button>
+      </div>
       <div className="space-y-1 text-center text-xs text-muted-foreground">
         <p>{T.practiceHint}</p>
+        <p className="sm:hidden">{T.swipeHint}</p>
         <p className="hidden sm:block">{T.keys}</p>
       </div>
     </div>

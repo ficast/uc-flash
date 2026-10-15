@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FlashcardsPage } from './FlashcardsPage'
 import { pileKey } from '@/hooks/usePileStore'
@@ -13,10 +13,15 @@ const DECK: FlashDeck = { key: 'de-daf-a1', title: 'Deutsch A1 (DaF)', language:
 const page = () => render(<FlashcardsPage decks={[DECK]} />)
 const stored = () => JSON.parse(localStorage.getItem(pileKey(DECK.key)) ?? 'null') as { pile: string[] } | null
 
-test('o baralho incluído: Lektion 1 a 10, 1.481 vocábulos', () => {
-  const [deck] = DECKS
-  expect(deck.lists.map((l) => l.title)).toEqual(Array.from({ length: 10 }, (_, i) => `Lektion ${i + 1}`))
-  expect(deck.lists.reduce((n, l) => n + l.cards.length, 0)).toBe(1481)
+test('os baralhos incluídos: A1 (Lektion 1 a 10, 1.481 vocábulos) e A2 (Lektion 11 a 20, 1.514)', () => {
+  const [a1, a2] = DECKS
+  expect(a1.lists.map((l) => l.title)).toEqual(Array.from({ length: 10 }, (_, i) => `Lektion ${i + 1}`))
+  expect(a1.lists.reduce((n, l) => n + l.cards.length, 0)).toBe(1481)
+  expect(a2.lists.map((l) => l.title)).toEqual(Array.from({ length: 10 }, (_, i) => `Lektion ${i + 11}`))
+  expect(a2.lists.reduce((n, l) => n + l.cards.length, 0)).toBe(1514)
+  expect(a2.lists.every((l) => l.cards.every((c) => c.sec.startsWith(l.key.slice('lektion-'.length))))).toBe(true)
+  // Todos os cartões dos dois livros trazem a frase de exemplo com a tradução.
+  expect(DECKS.every((d) => d.lists.every((l) => l.cards.every((c) => c.ex?.trim() && c.ex_pt?.trim())))).toBe(true)
 })
 
 test('escolha: começa na primeira lista; Todas, Limpar, direção e a escolha lembrada', async () => {
@@ -109,4 +114,106 @@ test('sem monte guardado (ou com um que já não serve), não aparece "Continuar
   page()
   expect(screen.getByRole('button', { name: /Começar com/ })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /Continuar onde parei/ })).not.toBeInTheDocument()
+})
+
+test('com dois livros: escolher o livro, cada um com as suas listas, e o livro lembrado', async () => {
+  const A2: FlashDeck = { ...DECK, key: 'de-daf-a2', title: 'Deutsch A2 (DaF)', lists: [
+    { key: 'lektion-11', title: 'Lektion 11', cards: [card('der Grund, ⸚e', 'a razão', '11A')] },
+  ] }
+  const { unmount } = render(<FlashcardsPage decks={[DECK, A2]} />)
+  expect(screen.queryByRole('button', { name: /^Lektion 11/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /Deutsch A1 \(DaF\)\s*Lektion 1 a 2/ })).toHaveAttribute('aria-pressed', 'true')
+  await userEvent.click(screen.getByRole('button', { name: /Deutsch A2/ }))
+  expect(screen.getByRole('button', { name: /^Lektion 11/ })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Começar com 2 cartões' })).toBeInTheDocument()
+  unmount()
+  render(<FlashcardsPage decks={[DECK, A2]} />) // de volta: o A2
+  expect(screen.getByRole('button', { name: /Deutsch A2/ })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('com um só livro, não aparece a escolha de livro', () => {
+  page()
+  expect(screen.queryByRole('group', { name: 'Livro' })).not.toBeInTheDocument()
+})
+
+test('frase de exemplo: só no verso, nas duas direções', async () => {
+  const ex = { ...card('kommen', 'vir'), ex: 'Ich komme aus Brasilien.', ex_pt: 'Venho do Brasil.' }
+  render(<FlashcardsPage decks={[{ ...DECK, lists: [{ key: 'lektion-1', title: 'Lektion 1', cards: [ex] }] }]} />)
+  await userEvent.click(screen.getByRole('button', { name: 'Começar com 2 cartões' }))
+  for (let i = 0; i < 2; i++) {
+    expect(screen.queryByTestId('fc-example')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Virar' }))
+    expect(screen.getByTestId('fc-example')).toHaveTextContent('Ich komme aus Brasilien.Venho do Brasil.')
+    await userEvent.click(screen.getByRole('button', { name: /Certo/ }))
+  }
+})
+
+test('cartão anterior: desfaz a última resposta (botão, Backspace e deslizar para a direita)', async () => {
+  page()
+  await userEvent.click(screen.getByRole('button', { name: /Alemão → português/ })) // 2 cartões
+  await userEvent.click(screen.getByRole('button', { name: 'Começar com 2 cartões' }))
+  const stats = screen.getByTestId('fc-stats')
+  const front = () => within(screen.getByTestId('fc-card')).getByText(/^(der Kurs|die Frage)/).textContent
+  expect(screen.getByRole('button', { name: /Cartão anterior/ })).toBeDisabled()
+  const first = front()
+  await userEvent.click(screen.getByRole('button', { name: 'Virar' }))
+  await userEvent.click(screen.getByRole('button', { name: /Errado/ }))
+  expect(stats).toHaveTextContent('Erros 1')
+  // botão: o mesmo cartão, por virar, e o erro desfeito
+  await userEvent.click(screen.getByRole('button', { name: /Cartão anterior/ }))
+  expect(front()).toBe(first)
+  expect(screen.queryByTestId('fc-answer')).not.toBeInTheDocument()
+  expect(stats).toHaveTextContent('Erros 0')
+  expect(screen.getByRole('button', { name: /Cartão anterior/ })).toBeDisabled()
+  // Backspace
+  await userEvent.keyboard('v')
+  await userEvent.keyboard('{ArrowRight}')
+  expect(stats).toHaveTextContent('Certas 1')
+  await userEvent.keyboard('{Backspace}')
+  expect(stats).toHaveTextContent('Certas 0')
+  expect(front()).toBe(first)
+  // deslizar para a direita (um toque vertical não conta)
+  await userEvent.keyboard('v')
+  await userEvent.keyboard('{ArrowRight}')
+  const cardEl = screen.getByTestId('fc-card')
+  fireEvent.touchStart(cardEl, { touches: [{ clientX: 100, clientY: 100 }] })
+  fireEvent.touchEnd(cardEl, { changedTouches: [{ clientX: 110, clientY: 300 }] })
+  expect(stats).toHaveTextContent('Certas 1')
+  fireEvent.touchStart(cardEl, { touches: [{ clientX: 50, clientY: 100 }] })
+  fireEvent.touchEnd(cardEl, { changedTouches: [{ clientX: 200, clientY: 110 }] })
+  expect(stats).toHaveTextContent('Certas 0')
+  // do fim do monte também se volta ao último cartão
+  for (let i = 0; i < 2; i++) {
+    await userEvent.keyboard('v')
+    await userEvent.keyboard('{ArrowRight}')
+  }
+  expect(screen.getByRole('heading', { name: 'Monte terminado' })).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: /Cartão anterior/ }))
+  expect(screen.getByTestId('fc-stats')).toHaveTextContent('No monte 1')
+})
+
+test('saltar: o cartão fica no monte, sem contar (botão, S e deslizar para a esquerda); o anterior desfaz', async () => {
+  page()
+  await userEvent.click(screen.getByRole('button', { name: /Alemão → português/ })) // 2 cartões
+  await userEvent.click(screen.getByRole('button', { name: 'Começar com 2 cartões' }))
+  const stats = screen.getByTestId('fc-stats')
+  const front = () => within(screen.getByTestId('fc-card')).getByText(/^(der Kurs|die Frage)/).textContent
+  const first = front()
+  await userEvent.click(screen.getByRole('button', { name: /Saltar/ })) // sem virar
+  expect(front()).not.toBe(first)
+  expect(stats).toHaveTextContent('No monte 2')
+  expect(stats).toHaveTextContent('Certas 0')
+  expect(stats).toHaveTextContent('Erros 0')
+  await userEvent.keyboard('s')
+  expect(front()).toBe(first)
+  const cardEl = screen.getByTestId('fc-card')
+  fireEvent.touchStart(cardEl, { touches: [{ clientX: 200, clientY: 100 }] })
+  fireEvent.touchEnd(cardEl, { changedTouches: [{ clientX: 50, clientY: 110 }] })
+  expect(front()).not.toBe(first)
+  await userEvent.click(screen.getByRole('button', { name: /Cartão anterior/ }))
+  expect(front()).toBe(first)
+  // com um só cartão no monte, não há para onde saltar
+  await userEvent.keyboard('v')
+  await userEvent.keyboard('{ArrowRight}')
+  expect(screen.getByRole('button', { name: /Saltar/ })).toBeDisabled()
 })

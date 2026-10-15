@@ -69,12 +69,25 @@ export function answer(s: PileState, ok: boolean, rng: () => number = Math.rando
     if (pile.length === 0) pile.push(id)
     else pile.splice(1 + Math.floor(rng() * pile.length), 0, id)
   }
-  // O mesmo vocábulo na outra direção logo em seguida entregaria a resposta: troca por outro card.
+  avoidSibling(pile, id)
+  return { ...s, pile, errs, wrong, removed }
+}
+
+/** Salta o card do topo: vai para o fim do monte, sem contar como certo nem errado. */
+export function skip(s: PileState): PileState {
+  const [id, ...rest] = s.pile
+  if (id === undefined || rest.length === 0) return s
+  const pile = [...rest, id]
+  avoidSibling(pile, id)
+  return { ...s, pile }
+}
+
+/** O mesmo vocábulo na outra direção logo em seguida entregaria a resposta: troca por outro card. */
+function avoidSibling(pile: CardKey[], id: CardKey) {
   if (pile.length > 2 && sibling(pile[0], id)) {
     const j = pile.findIndex((k, i) => i > 0 && k !== id && !sibling(k, id))
     if (j > 0) [pile[0], pile[j]] = [pile[j], pile[0]]
   }
-  return { ...s, pile, errs, wrong, removed }
 }
 
 export interface PileSummary {

@@ -1,4 +1,4 @@
-import { answer, cardOf, genderParts, selection, startPile, summary } from './flashcardDeck'
+import { answer, cardOf, genderParts, selection, skip, startPile, summary } from './flashcardDeck'
 import type { FlashDeck } from './types'
 
 const card = (de: string, pt: string) => ({ de, ipa: '', pt, plural: '', nota: '', sec: '1A' })
@@ -49,4 +49,13 @@ test('gênero do artigo em cada parte', () => {
   expect(genderParts('das Foto, -s')[0].gender).toBe('n')
   expect(genderParts('gehen')[0].gender).toBeNull()
   expect(genderParts('dieser')[0].gender).toBeNull()
+})
+
+test('saltar: o card do topo vai para o fim, sem contar; sozinho no monte, fica', () => {
+  const s = { pile: ['l1:0:d', 'l1:1:d', 'l1:2:d'], total: 3, errs: {}, wrong: 0, removed: 0 }
+  expect(skip(s)).toEqual({ ...s, pile: ['l1:1:d', 'l1:2:d', 'l1:0:d'] })
+  const one = { ...s, pile: ['l1:0:d'] }
+  expect(skip(one)).toBe(one)
+  // a outra direção do mesmo vocábulo não vem logo a seguir
+  expect(skip({ ...s, pile: ['l1:0:d', 'l1:0:p', 'l1:1:d', 'l1:2:d'] }).pile[0]).not.toBe('l1:0:p')
 })
