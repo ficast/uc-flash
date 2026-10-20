@@ -1,13 +1,14 @@
-# Flashcards de Alemão A1 e A2
+# Flashcards de Alemão A1, A2 e B1
 
 Um app simples para praticar vocabulário de alemão com flashcards. Não tem login nem servidor: o progresso fica
 guardado no próprio aparelho (`localStorage`). É uma PWA, por isso dá para instalar no telemóvel e usar offline.
 
 O vocabulário segue as listas do livro **Kurs DaF** (editora Klett), com as traduções em português europeu:
-**A1**, Lektionen 1 a 10 (1.481 vocábulos), e **A2**, Lektionen 11 a 20 (1.514 vocábulos).
+**A1**, Lektionen 1 a 10 (1.481 vocábulos), **A2**, Lektionen 11 a 20 (1.514 vocábulos), e **B1**,
+Lektionen 21 a 30 (1.507 vocábulos).
 Cada vocábulo traz uma frase de exemplo com a tradução, mostrada no verso do cartão.
 
-- Baralhos: `src/data/de-daf-a1.json` e `src/data/de-daf-a2.json`, registados em `src/lib/decks.ts`.
+- Baralhos: `src/data/de-daf-a1.json`, `src/data/de-daf-a2.json` e `src/data/de-daf-b1.json`, registados em `src/lib/decks.ts`.
 - Lógica do monte (embaralhar, certo/errado, resumo): `src/lib/flashcardDeck.ts`.
 - Textos da interface: `src/lib/strings.ts`.
 

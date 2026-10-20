@@ -16,7 +16,7 @@ export default defineConfig({
       manifest: {
         name: 'UC Flashcards',
         short_name: 'UC Flashcards',
-        description: 'Vocabulário de alemão (DaF A1 e A2) em flashcards, com o progresso guardado no aparelho.',
+        description: 'Vocabulário de alemão (DaF A1, A2 e B1) em flashcards, com o progresso guardado no aparelho.',
         lang: 'pt-PT',
         start_url: '/',
         display: 'standalone',

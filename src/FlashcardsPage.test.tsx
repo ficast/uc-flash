@@ -13,14 +13,16 @@ const DECK: FlashDeck = { key: 'de-daf-a1', title: 'Kurs DaF A1', language: 'de'
 const page = () => render(<FlashcardsPage decks={[DECK]} />)
 const stored = () => JSON.parse(localStorage.getItem(pileKey(DECK.key)) ?? 'null') as { pile: string[] } | null
 
-test('os baralhos incluídos: A1 (Lektion 1 a 10, 1.481 vocábulos) e A2 (Lektion 11 a 20, 1.514)', () => {
-  const [a1, a2] = DECKS
+test('os baralhos incluídos: A1 (Lektion 1 a 10, 1.481 vocábulos), A2 (11 a 20, 1.514) e B1 (21 a 30, 1.507)', () => {
+  const [a1, a2, b1] = DECKS
   expect(a1.lists.map((l) => l.title)).toEqual(Array.from({ length: 10 }, (_, i) => `Lektion ${i + 1}`))
   expect(a1.lists.reduce((n, l) => n + l.cards.length, 0)).toBe(1481)
   expect(a2.lists.map((l) => l.title)).toEqual(Array.from({ length: 10 }, (_, i) => `Lektion ${i + 11}`))
   expect(a2.lists.reduce((n, l) => n + l.cards.length, 0)).toBe(1514)
-  expect(a2.lists.every((l) => l.cards.every((c) => c.sec.startsWith(l.key.slice('lektion-'.length))))).toBe(true)
-  // Todos os cartões dos dois livros trazem a frase de exemplo com a tradução.
+  expect(b1.lists.map((l) => l.title)).toEqual(Array.from({ length: 10 }, (_, i) => `Lektion ${i + 21}`))
+  expect(b1.lists.reduce((n, l) => n + l.cards.length, 0)).toBe(1507)
+  expect([a2, b1].every((d) => d.lists.every((l) => l.cards.every((c) => c.sec.startsWith(l.key.slice('lektion-'.length)))))).toBe(true)
+  // Todos os cartões dos três livros trazem a frase de exemplo com a tradução.
   expect(DECKS.every((d) => d.lists.every((l) => l.cards.every((c) => c.ex?.trim() && c.ex_pt?.trim())))).toBe(true)
 })
 
